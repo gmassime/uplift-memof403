@@ -12,27 +12,27 @@ class HillstromDataset:
 
     def cleanDataset(self):
         """
-        Assigns an integer value to all string entries. In particular:
-         - in 'history_segment', the entries are replaced by an integer from 0 to 7(?)
-         - in 'zip_code', Rural = 0, Suburban = 1 and Urban = 2
-         - in 'channel', Multichannel = 0, Phone = 1, Web = 2
+        Prepares the dataset for use. In particular:
+         - 'history_segment', 'zip_code' and 'channel' are transformed with one-hot encoding
          - in 'segment', No E-Mail = 0, Mens E-Mail = 1, Womens E-Mail = 2
+         - 'spend' and 'conversion' are dropped, we will only target 'visit'
         """
-        self.data["history_segment"] = self.data["history_segment"].factorize(sort=True)[0]
-        self.data["zip_code"] = self.data["zip_code"].factorize(sort=True)[0]
-        self.data["channel"] = self.data["channel"].factorize(sort=True)[0]
+        for column in ["history_segment", "zip_code", "channel"]:
+            one_hot = pd.get_dummies(self.data[column])
+            self.data = self.data.drop(column, axis=1).join(one_hot)
         self.data["segment"] = self.data["segment"].replace({"No E-Mail" : 0, "Mens E-Mail" : 1, "Womens E-Mail" : 2})
+        self.data = self.data.drop(["spend", "conversion"], axis=1)
 
     def getCampaignData(self, campaign=1):
         """
         Returns data that is compatible with CausalML meta-learners
         :param campaign: 1 if we want to analyse the mens campaign, 2 for the womens campaign
-        :return: a tuple of 3 arrays: the outcome (visit), the features (from recency to channel) and the treatment indicator(segment)
+        :return: a tuple of 3 arrays: the outcome (visit), the features and the treatment indicator (segment)
         """
         if campaign != 1 and campaign != 2:
             raise ValueError
         current_dataset = self.data[self.data["segment"] != 3 - campaign]
         outcome = current_dataset["visit"].to_numpy()
-        features = current_dataset.iloc[:, :8].to_numpy()
+        features = current_dataset.drop(["visit", "segment"], axis=1).to_numpy()
         treatment = current_dataset["segment"].to_numpy()
         return outcome, features, treatment
