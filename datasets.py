@@ -12,6 +12,10 @@ class DatasetCSV(ABC):
     def cleanDataset(self):
         pass
 
+    @abstractmethod
+    def getCampaignData(self):
+        pass
+
 
 class HillstromDataset(DatasetCSV):
 
@@ -66,3 +70,13 @@ class CriteoDataset(DatasetCSV):
          - 'spend' and 'conversion' are dropped, we will only target 'visit'
         """
         self.data = self.data.drop(["conversion", "exposure"], axis=1)
+
+    def getCampaignData(self):
+        """
+        Returns data that is compatible with CausalML meta-learners
+        :return: a tuple of 3 arrays: the outcome (visit), the features and the treatment indicator (treatment)
+        """
+        outcome = self.data["visit"].to_numpy()
+        features = self.data.drop(["visit", "treatment"], axis=1).to_numpy()
+        treatment = self.data["treatment"].to_numpy()
+        return outcome, features, treatment
