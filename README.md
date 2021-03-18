@@ -12,6 +12,7 @@ The datasets used for this benchmark are:
 
 The packages reviewed in this benchmark are:
 * [CausalML](https://pypi.org/project/causalml/)
+* [pyuplift](https://pypi.org/project/pyuplift/)
 
 ### CausalML
 
@@ -20,3 +21,16 @@ The models used are:
 * T-Learner
 * X-Learner
 * R-Learner
+* Uplift Random Forest with Contextual Treatment Selection
+
+The Meta-Learners are used with both Linear Regression and k-Neighbors Regression.
+
+### pyuplift
+
+The models used all rely on the Class Transformation method. We test the following approaches:
+* Lai
+* Kane
+* Jaskowski
+* Pessimistic
+* Reflective
+
